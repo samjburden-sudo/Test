@@ -26,7 +26,7 @@
     shiftRemaining: 60, // seconds, float
     periodElapsed: 0, // seconds, float
     shiftNumber: 1,
-    warningFiredForThisShift: false,
+    warningSecondsFired: new Set(), // which of {3,2,1} have already beeped this shift
     lastTickAt: null,
   };
 
@@ -57,7 +57,7 @@
   function resetShift(carryOverflow) {
     const overflow = carryOverflow ? Math.max(0, -state.shiftRemaining) : 0;
     state.shiftRemaining = state.shiftSeconds - overflow;
-    state.warningFiredForThisShift = false;
+    state.warningSecondsFired.clear();
   }
 
   function restart() {
@@ -65,7 +65,7 @@
     state.periodElapsed = 0;
     state.shiftNumber = 1;
     state.shiftRemaining = state.shiftSeconds;
-    state.warningFiredForThisShift = false;
+    state.warningSecondsFired.clear();
     state.lastTickAt = null;
     render();
   }
@@ -73,21 +73,19 @@
   function toggleRunning() {
     state.isRunning = !state.isRunning;
     state.lastTickAt = state.isRunning ? performance.now() : null;
-    // Unlock/resume audio context on this user gesture.
-    RinkAudio.getCtx();
     render();
   }
 
   function adjustShiftRemaining(delta) {
     state.shiftRemaining = clamp(state.shiftRemaining + delta, 0, state.shiftSeconds * 3);
-    state.warningFiredForThisShift = state.shiftRemaining > 3 ? false : state.warningFiredForThisShift;
+    state.warningSecondsFired.clear();
     render();
   }
 
   function setExactRemaining(seconds) {
     if (!Number.isFinite(seconds) || seconds < 0) return;
     state.shiftRemaining = seconds;
-    state.warningFiredForThisShift = seconds > 3;
+    state.warningSecondsFired.clear();
     render();
   }
 
@@ -100,9 +98,12 @@
     state.periodElapsed += delta;
     state.shiftRemaining -= delta;
 
-    if (state.warningBeepEnabled && !state.warningFiredForThisShift && state.shiftRemaining <= 3 && state.shiftRemaining > 0) {
-      state.warningFiredForThisShift = true;
-      RinkAudio.playWarningBeep();
+    if (state.warningBeepEnabled && state.shiftRemaining > 0 && state.shiftRemaining <= 3) {
+      const sec = Math.ceil(state.shiftRemaining);
+      if (sec >= 1 && sec <= 3 && !state.warningSecondsFired.has(sec)) {
+        state.warningSecondsFired.add(sec);
+        RinkAudio.playWarningBeep();
+      }
     }
 
     if (state.shiftRemaining <= 0) {
