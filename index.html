@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#0a5c0a" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>Rink Buzzer</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="icon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="icon.svg" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<main class="app">
+
+  <header class="app-header">
+    <h1>Rink Buzzer</h1>
+  </header>
+
+  <section class="card">
+    <div class="row-label">
+      <label for="periodLength">Period length</label>
+      <span id="periodShiftInfo" class="hint"></span>
+    </div>
+    <div class="stepper">
+      <button class="step-btn" data-target="periodLength" data-delta="-1" aria-label="Decrease period length">−</button>
+      <input id="periodLength" type="number" inputmode="numeric" min="1" max="90" value="20" />
+      <span class="unit">min</span>
+      <button class="step-btn" data-target="periodLength" data-delta="1" aria-label="Increase period length">+</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="row-label">
+      <label for="shiftInterval">Shift / buzzer interval</label>
+      <span id="shiftIntervalValue" class="hint">60s</span>
+    </div>
+    <input id="shiftInterval" type="range" min="15" max="180" step="5" value="60" />
+  </section>
+
+  <section class="card toggle-row">
+    <label class="switch-label" for="warningBeep">
+      <span>3-second warning beeps (count-down for line change)</span>
+      <span class="switch">
+        <input id="warningBeep" type="checkbox" checked />
+        <span class="slider-switch"></span>
+      </span>
+    </label>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="manual-buttons">
+    <button id="playBuzzer" class="manual-btn buzzer">Play Buzzer</button>
+    <button id="playHorn" class="manual-btn horn">Play Horn</button>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="timer-card" id="timerCard">
+    <div class="timer-status" id="timerStatus">Paused</div>
+    <div class="timer-clock" id="timerClock">1:00</div>
+    <div class="timer-sub" id="timerSub">Shift 1 · 0:00 of 20:00</div>
+  </section>
+
+  <section class="nudge-panel">
+    <div class="nudge-title">Resync shift timer to rink clock</div>
+    <div class="nudge-row">
+      <button class="nudge-btn" data-adjust="-10">−10s</button>
+      <button class="nudge-btn" data-adjust="-5">−5s</button>
+      <button class="nudge-btn" data-adjust="-1">−1s</button>
+      <button class="nudge-btn" data-adjust="1">+1s</button>
+      <button class="nudge-btn" data-adjust="5">+5s</button>
+      <button class="nudge-btn" data-adjust="10">+10s</button>
+    </div>
+    <div class="set-exact-row">
+      <input id="setExactTime" type="number" inputmode="numeric" min="0" placeholder="Set remaining seconds" />
+      <button id="setExactBtn" class="set-exact-btn">Set</button>
+    </div>
+  </section>
+
+  <button id="restartBtn" class="restart-btn">Restart</button>
+
+  <div class="divider"></div>
+
+  <section class="music-section">
+    <h2>Interim / Injury Break Music</h2>
+    <p class="music-hint">Tap a track to loop it during a break; tap again (or Stop All) to end it.</p>
+    <div id="musicGrid" class="music-grid"></div>
+    <button id="stopMusic" class="stop-music-btn">Stop All Music</button>
+  </section>
+
+</main>
+
+<script src="audio.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "name": "Rink Buzzer",
+  "short_name": "Rink Buzzer",
+  "description": "Ice hockey shift/period buzzer, horn, and break music.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0a6b0a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
