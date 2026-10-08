@@ -51,6 +51,16 @@
     </label>
   </section>
 
+  <section class="card toggle-row">
+    <label class="switch-label" for="endHorn">
+      <span>Horn at end of game (period complete)</span>
+      <span class="switch">
+        <input id="endHorn" type="checkbox" checked />
+        <span class="slider-switch"></span>
+      </span>
+    </label>
+  </section>
+
   <div class="divider"></div>
 
   <section class="manual-buttons">
@@ -89,6 +99,11 @@
   <section class="music-section">
     <h2>Interim / Injury Break Music</h2>
     <p class="music-hint">Tap a track to loop it during a break; tap again (or Stop All) to end it.</p>
+    <div class="row-label">
+      <label for="musicVolume">Music volume</label>
+      <span id="musicVolumeValue" class="hint">100%</span>
+    </div>
+    <input id="musicVolume" type="range" min="0" max="100" value="100" class="volume-slider" />
     <div id="musicGrid" class="music-grid"></div>
     <button id="stopMusic" class="stop-music-btn">Stop All Music</button>
   </section>
