@@ -1,23 +1,40 @@
 // Buzzer, horn, warning beep, and break-music tracks all play from real
 // audio files supplied by the user (see audio/ directory).
+//
+// Each sound is preloaded into its own <audio> element up front instead of
+// being constructed on demand: building a fresh Audio() at play-time means
+// the browser has to fetch and decode the file before any sound comes out,
+// which is exactly the kind of startup lag a shift-change buzzer can't
+// afford. Preloading lets the browser finish that work ahead of time so
+// play() only has to resume already-decoded audio.
 
 const RinkAudio = (() => {
-  function playOneShot(src) {
+  function preload(src) {
     const a = new Audio(src);
-    a.play().catch(() => {});
+    a.preload = "auto";
+    a.load();
     return a;
   }
 
+  function playPreloaded(audio) {
+    audio.currentTime = 0;
+    audio.play().catch(() => {});
+  }
+
+  const buzzerAudio = preload("audio/buzzer.mp3");
+  const hornAudio = preload("audio/boat-horn.mp3");
+  const warningBeepAudio = preload("audio/warning-beep.mp3");
+
   function playBuzzer() {
-    playOneShot("audio/buzzer.mp3");
+    playPreloaded(buzzerAudio);
   }
 
   function playHorn() {
-    playOneShot("audio/boat-horn.mp3");
+    playPreloaded(hornAudio);
   }
 
   function playWarningBeep() {
-    playOneShot("audio/warning-beep.mp3");
+    playPreloaded(warningBeepAudio);
   }
 
   const TRACKS = [
@@ -26,16 +43,36 @@ const RinkAudio = (() => {
     { id: "game-day", name: "Game Day", src: "audio/track-game-day.mp3" },
     { id: "stadium", name: "Stadium Anthem", src: "audio/track-stadium.mp3" },
   ];
+  TRACKS.forEach((track) => {
+    track.audio = preload(track.src);
+    track.audio.loop = true;
+  });
 
-  let activeAudio = null;
+  let unlocked = false;
+
+  // iOS Safari won't actually buffer a preloaded <audio> until the page has
+  // had a user gesture. Call this on the very first tap so the one-shot
+  // sounds are genuinely primed by the time they're needed, instead of
+  // eating the fetch/decode delay on their first real play.
+  function unlock() {
+    if (unlocked) return;
+    unlocked = true;
+    [buzzerAudio, hornAudio, warningBeepAudio, ...TRACKS.map((t) => t.audio)].forEach((audio) => {
+      audio.play().then(() => audio.pause()).catch(() => {});
+      audio.currentTime = 0;
+    });
+  }
+
   let activeId = null;
 
   function stopMusic() {
-    if (activeAudio) {
-      activeAudio.pause();
-      activeAudio.currentTime = 0;
+    if (activeId) {
+      const track = TRACKS.find((t) => t.id === activeId);
+      if (track) {
+        track.audio.pause();
+        track.audio.currentTime = 0;
+      }
     }
-    activeAudio = null;
     activeId = null;
   }
 
@@ -52,15 +89,13 @@ const RinkAudio = (() => {
     stopMusic();
     const track = TRACKS.find((t) => t.id === id);
     if (!track) return;
-    const audio = new Audio(track.src);
-    audio.loop = true;
-    audio.play().catch(() => {});
-    activeAudio = audio;
+    playPreloaded(track.audio);
     activeId = id;
     onChange(id);
   }
 
   return {
+    unlock,
     playBuzzer,
     playHorn,
     playWarningBeep,
