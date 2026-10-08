@@ -206,6 +206,8 @@
 
   // --- Init ---------------------------------------------------------
 
+  document.addEventListener("pointerdown", () => RinkAudio.unlock(), { once: true });
+
   updatePeriodShiftInfo();
   render();
   setInterval(tick, 100);
