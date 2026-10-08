@@ -16,9 +16,19 @@ const RinkAudio = (() => {
     return a;
   }
 
-  function playPreloaded(audio) {
-    audio.currentTime = 0;
-    audio.play().catch(() => {});
+  // Play a fresh clone of a preloaded element rather than restarting the
+  // same element in place. Three warning beeps can legitimately fire
+  // within the same tick (e.g. resyncing the clock, or a throttled tab
+  // catching up); calling .play() again on an element whose previous
+  // play() promise hasn't settled yet - or racing it against unlock()'s
+  // play().then(pause) - can silently abort or truncate the earlier call
+  // in some browsers, with the failure swallowed by the catch below. A
+  // clone has no shared state to race, so every play is independent. The
+  // clone reuses the template's already-fetched/decoded network resource,
+  // so this doesn't reintroduce the fetch/decode latency preloading fixed.
+  function playOneShot(templateAudio) {
+    const a = templateAudio.cloneNode(true);
+    a.play().catch(() => {});
   }
 
   const buzzerAudio = preload("audio/buzzer.mp3");
@@ -26,15 +36,15 @@ const RinkAudio = (() => {
   const warningBeepAudio = preload("audio/warning-beep.mp3");
 
   function playBuzzer() {
-    playPreloaded(buzzerAudio);
+    playOneShot(buzzerAudio);
   }
 
   function playHorn() {
-    playPreloaded(hornAudio);
+    playOneShot(hornAudio);
   }
 
   function playWarningBeep() {
-    playPreloaded(warningBeepAudio);
+    playOneShot(warningBeepAudio);
   }
 
   const TRACKS = [
@@ -64,6 +74,7 @@ const RinkAudio = (() => {
   }
 
   let activeId = null;
+  let musicVolume = 1;
 
   function stopMusic() {
     if (activeId) {
@@ -89,9 +100,20 @@ const RinkAudio = (() => {
     stopMusic();
     const track = TRACKS.find((t) => t.id === id);
     if (!track) return;
-    playPreloaded(track.audio);
+    track.audio.currentTime = 0;
+    track.audio.volume = musicVolume;
+    track.audio.play().catch(() => {});
     activeId = id;
     onChange(id);
+  }
+
+  // Applies live, so dragging the slider fades the currently playing
+  // track in/out, and also sets the level new tracks will start at.
+  function setMusicVolume(v) {
+    musicVolume = Math.max(0, Math.min(1, v));
+    TRACKS.forEach((track) => {
+      track.audio.volume = musicVolume;
+    });
   }
 
   return {
@@ -103,5 +125,6 @@ const RinkAudio = (() => {
     toggleTrack,
     stopMusic,
     isPlaying,
+    setMusicVolume,
   };
 })();

@@ -5,6 +5,7 @@
     shiftInterval: document.getElementById("shiftInterval"),
     shiftIntervalValue: document.getElementById("shiftIntervalValue"),
     warningBeep: document.getElementById("warningBeep"),
+    endHorn: document.getElementById("endHorn"),
     playBuzzer: document.getElementById("playBuzzer"),
     playHorn: document.getElementById("playHorn"),
     timerCard: document.getElementById("timerCard"),
@@ -16,12 +17,15 @@
     setExactBtn: document.getElementById("setExactBtn"),
     musicGrid: document.getElementById("musicGrid"),
     stopMusic: document.getElementById("stopMusic"),
+    musicVolume: document.getElementById("musicVolume"),
+    musicVolumeValue: document.getElementById("musicVolumeValue"),
   };
 
   const state = {
     periodMinutes: 20,
     shiftSeconds: 60,
     warningBeepEnabled: true,
+    endHornEnabled: true,
     isRunning: false,
     shiftRemaining: 60, // seconds, float
     periodElapsed: 0, // seconds, float
@@ -123,7 +127,7 @@
       state.isRunning = false;
       state.lastTickAt = null;
       state.periodElapsed = periodTotal;
-      RinkAudio.playHorn();
+      if (state.endHornEnabled) RinkAudio.playHorn();
     }
 
     render();
@@ -164,6 +168,16 @@
 
   el.warningBeep.addEventListener("change", () => {
     state.warningBeepEnabled = el.warningBeep.checked;
+  });
+
+  el.endHorn.addEventListener("change", () => {
+    state.endHornEnabled = el.endHorn.checked;
+  });
+
+  el.musicVolume.addEventListener("input", () => {
+    const v = parseInt(el.musicVolume.value, 10);
+    el.musicVolumeValue.textContent = `${v}%`;
+    RinkAudio.setMusicVolume(v / 100);
   });
 
   el.playBuzzer.addEventListener("click", () => RinkAudio.playBuzzer());
