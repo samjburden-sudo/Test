@@ -98,12 +98,18 @@
     state.periodElapsed += delta;
     state.shiftRemaining -= delta;
 
-    if (state.warningBeepEnabled && state.shiftRemaining > 0 && state.shiftRemaining <= 3) {
-      const sec = Math.ceil(state.shiftRemaining);
-      if (sec >= 1 && sec <= 3 && !state.warningSecondsFired.has(sec)) {
-        state.warningSecondsFired.add(sec);
-        RinkAudio.playWarningBeep();
-      }
+    if (state.warningBeepEnabled) {
+      // Check each threshold independently (not "is remaining currently
+      // inside the 0-3s window") so a big single tick - e.g. after the
+      // browser throttles a backgrounded tab - can't jump straight past
+      // the window and skip the beeps; every threshold still at or below
+      // the new remaining time fires, each only once per descent.
+      [3, 2, 1].forEach((t) => {
+        if (state.shiftRemaining <= t && !state.warningSecondsFired.has(t)) {
+          state.warningSecondsFired.add(t);
+          RinkAudio.playWarningBeep();
+        }
+      });
     }
 
     if (state.shiftRemaining <= 0) {
@@ -151,6 +157,7 @@
     updatePeriodShiftInfo();
     if (!state.isRunning) {
       state.shiftRemaining = v;
+      state.warningSecondsFired.clear();
       render();
     }
   });
