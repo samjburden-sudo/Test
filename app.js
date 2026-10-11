@@ -8,6 +8,7 @@
     endHorn: document.getElementById("endHorn"),
     playBuzzer: document.getElementById("playBuzzer"),
     playHorn: document.getElementById("playHorn"),
+    playWarningSequence: document.getElementById("playWarningSequence"),
     timerCard: document.getElementById("timerCard"),
     timerStatus: document.getElementById("timerStatus"),
     timerClock: document.getElementById("timerClock"),
@@ -195,6 +196,7 @@
 
   el.playBuzzer.addEventListener("click", () => RinkAudio.playBuzzer());
   el.playHorn.addEventListener("click", () => RinkAudio.playHorn());
+  el.playWarningSequence.addEventListener("click", () => RinkAudio.playWarningSequence());
 
   el.timerCard.addEventListener("click", toggleRunning);
 

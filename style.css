@@ -199,6 +199,23 @@ input[type="range"] {
   background: var(--orange-dark);
 }
 
+.manual-btn-small {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--track-bg);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.manual-btn-small:active {
+  background: var(--border);
+}
+
 .timer-card {
   background: var(--red);
   border-radius: 16px;

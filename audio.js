@@ -47,6 +47,13 @@ const RinkAudio = (() => {
     playOneShot(warningBeepAudio);
   }
 
+  // Manual preview of the 3-2-1 countdown: three beeps, 1 second apart.
+  function playWarningSequence() {
+    playWarningBeep();
+    setTimeout(playWarningBeep, 1000);
+    setTimeout(playWarningBeep, 2000);
+  }
+
   const TRACKS = [
     { id: "sport-music", name: "Sport Music", src: "audio/track-sport-music.mp3" },
     { id: "fitness", name: "Fitness Energy", src: "audio/track-fitness.mp3" },
@@ -122,6 +129,7 @@ const RinkAudio = (() => {
     playBuzzer,
     playHorn,
     playWarningBeep,
+    playWarningSequence,
     TRACKS,
     toggleTrack,
     stopMusic,
