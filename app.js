@@ -80,17 +80,30 @@
     render();
   }
 
-  function adjustShiftRemaining(delta) {
-    state.shiftRemaining = clamp(state.shiftRemaining + delta, 0, state.shiftSeconds * 3);
+  // The shift clock counts down and the period clock counts up, but
+  // they're two views of the same underlying game clock. Resyncing one
+  // to match the rink's physical clock has to move the other by the same
+  // real amount (in the opposite direction), or the period clock drifts
+  // out of step with every resync - eventually reaching its own end mark
+  // at the wrong moment, which auto-stops the timer and silently kills
+  // whatever shift-level warning/buzzer hadn't fired yet.
+  function applyShiftRemainingChange(newRemaining) {
+    const before = state.shiftRemaining;
+    state.shiftRemaining = newRemaining;
+    const actualDelta = state.shiftRemaining - before;
+    const periodTotal = state.periodMinutes * 60;
+    state.periodElapsed = clamp(state.periodElapsed - actualDelta, 0, periodTotal);
     state.warningSecondsFired.clear();
     render();
   }
 
+  function adjustShiftRemaining(delta) {
+    applyShiftRemainingChange(clamp(state.shiftRemaining + delta, 0, state.shiftSeconds * 3));
+  }
+
   function setExactRemaining(seconds) {
     if (!Number.isFinite(seconds) || seconds < 0) return;
-    state.shiftRemaining = seconds;
-    state.warningSecondsFired.clear();
-    render();
+    applyShiftRemainingChange(seconds);
   }
 
   function tick() {
