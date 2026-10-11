@@ -88,23 +88,34 @@
   // out of step with every resync - eventually reaching its own end mark
   // at the wrong moment, which auto-stops the timer and silently kills
   // whatever shift-level warning/buzzer hadn't fired yet.
-  function applyShiftRemainingChange(newRemaining) {
-    const before = state.shiftRemaining;
-    state.shiftRemaining = newRemaining;
-    const actualDelta = state.shiftRemaining - before;
+  //
+  // Adding enough time can also push the shift clock back past its own
+  // full length - that means play has gone back into an earlier shift,
+  // so walk the shift counter backward (never below 1) the same way the
+  // natural countdown walks it forward when crossing zero. No buzzer
+  // plays for this: it's a manual correction to match reality, not a new
+  // shift-change event.
+  function applyShiftDelta(delta) {
+    let remaining = state.shiftRemaining + delta;
+    while (remaining > state.shiftSeconds && state.shiftNumber > 1) {
+      remaining -= state.shiftSeconds;
+      state.shiftNumber -= 1;
+    }
+    state.shiftRemaining = clamp(remaining, 0, state.shiftSeconds * 3);
+
     const periodTotal = state.periodMinutes * 60;
-    state.periodElapsed = clamp(state.periodElapsed - actualDelta, 0, periodTotal);
+    state.periodElapsed = clamp(state.periodElapsed - delta, 0, periodTotal);
     state.warningSecondsFired.clear();
     render();
   }
 
   function adjustShiftRemaining(delta) {
-    applyShiftRemainingChange(clamp(state.shiftRemaining + delta, 0, state.shiftSeconds * 3));
+    applyShiftDelta(delta);
   }
 
   function setExactRemaining(seconds) {
     if (!Number.isFinite(seconds) || seconds < 0) return;
-    applyShiftRemainingChange(seconds);
+    applyShiftDelta(seconds - state.shiftRemaining);
   }
 
   function tick() {
@@ -130,14 +141,18 @@
       });
     }
 
+    const periodTotal = state.periodMinutes * 60;
+    const periodJustEnded = state.periodElapsed >= periodTotal;
+
     if (state.shiftRemaining <= 0) {
-      RinkAudio.playBuzzer();
+      // Don't also sound the shift buzzer if the period horn is about to
+      // go off in this same tick - only one sound should mark the end.
+      if (!periodJustEnded) RinkAudio.playBuzzer();
       state.shiftNumber += 1;
       resetShift(true);
     }
 
-    const periodTotal = state.periodMinutes * 60;
-    if (state.periodElapsed >= periodTotal) {
+    if (periodJustEnded) {
       state.isRunning = false;
       state.lastTickAt = null;
       state.periodElapsed = periodTotal;
