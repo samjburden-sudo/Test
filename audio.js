@@ -52,6 +52,7 @@ const RinkAudio = (() => {
     { id: "fitness", name: "Fitness Energy", src: "audio/track-fitness.mp3" },
     { id: "game-day", name: "Game Day", src: "audio/track-game-day.mp3" },
     { id: "stadium", name: "Stadium Anthem", src: "audio/track-stadium.mp3" },
+    { id: "charge-organ", name: "The Charge - Organ", src: "audio/track-charge-organ.mp3" },
   ];
   TRACKS.forEach((track) => {
     track.audio = preload(track.src);
