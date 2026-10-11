@@ -47,11 +47,19 @@ const RinkAudio = (() => {
     playOneShot(warningBeepAudio);
   }
 
+  // Manual preview of the 3-2-1 countdown: three beeps, 1 second apart.
+  function playWarningSequence() {
+    playWarningBeep();
+    setTimeout(playWarningBeep, 1000);
+    setTimeout(playWarningBeep, 2000);
+  }
+
   const TRACKS = [
     { id: "sport-music", name: "Sport Music", src: "audio/track-sport-music.mp3" },
     { id: "fitness", name: "Fitness Energy", src: "audio/track-fitness.mp3" },
     { id: "game-day", name: "Game Day", src: "audio/track-game-day.mp3" },
     { id: "stadium", name: "Stadium Anthem", src: "audio/track-stadium.mp3" },
+    { id: "charge-organ", name: "The Charge - Organ", src: "audio/track-charge-organ.mp3" },
   ];
   TRACKS.forEach((track) => {
     track.audio = preload(track.src);
@@ -121,6 +129,7 @@ const RinkAudio = (() => {
     playBuzzer,
     playHorn,
     playWarningBeep,
+    playWarningSequence,
     TRACKS,
     toggleTrack,
     stopMusic,
